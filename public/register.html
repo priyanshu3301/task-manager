@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Cloud Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Additional styles for auth pages */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--clr-bg);
+            overflow: hidden; /* Hide scrollbars */
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            padding: var(--spacing-xl);
+        }
+        .auth-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+        .auth-header .main-header__logo {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-sm);
+        }
+        .auth-header p {
+            color: var(--clr-text-secondary);
+        }
+        .auth-card {
+            background-color: var(--clr-surface);
+            padding: var(--spacing-xl);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--clr-border);
+            box-shadow: var(--box-shadow-lg);
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            font-size: 0.875rem;
+            color: var(--clr-text-secondary);
+        }
+        .auth-footer a {
+            color: var(--clr-primary);
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Toast Notification Styles */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-lg);
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast--success {
+            background-color: var(--clr-success);
+        }
+        .toast--error {
+            background-color: var(--clr-danger);
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container" class="toast"></div>
+
+    <div class="auth-container">
+        <header class="auth-header">
+            <div class="main-header__logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 45px; height: 45px; color: var(--clr-primary);">
+                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+                </svg>
+                <h1>Cloud Task Manager</h1>
+            </div>
+            <p>Create an account to start managing your tasks.</p>
+        </header>
+
+        <main class="auth-card">
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="username" class="form-group__label">Username</label>
+                    <input type="text" id="username" class="form-group__input" placeholder="e.g., johndoe" required>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-group__label">Password</label>
+                    <input type="password" id="password" class="form-group__input" placeholder="••••••••" required>
+                </div>
+                 <div class="form-group">
+                    <label for="confirm-password" class="form-group__label">Confirm Password</label>
+                    <input type="password" id="confirm-password" class="form-group__input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full-width" style="margin-top: 1rem;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+        </main>
+
+        <footer class="auth-footer">
+            <p>Already have an account? <a href="login.html">Log in</a></p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const registerForm = document.getElementById('register-form');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
+            const toastContainer = document.getElementById('toast-container');
+
+            /**
+             * Displays a toast notification.
+             * @param {string} message - The message to display.
+             * @param {string} type - 'success' or 'error'.
+             */
+            function showToast(message, type = 'error') {
+                toastContainer.textContent = message;
+                toastContainer.className = `toast show toast--${type}`;
+                setTimeout(() => {
+                    toastContainer.className = 'toast';
+                }, 3000); // Hide after 3 seconds
+            }
+
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); // Prevent default form submission
+
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                const submitButton = registerForm.querySelector('button[type="submit"]');
+
+                // --- Password Validation ---
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match. Please try again.');
+                    return; // Stop the function
+                }
+
+                // Disable button to prevent multiple submissions
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+
+                try {
+                    const response = await fetch('/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (response.ok) {
+                        // On success, show toast and redirect to login page
+                        showToast('Registration successful! Please log in.', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/login.html'; // Redirect to login
+                        }, 2000);
+                    } else {
+                        // On failure, parse error and show toast
+                        const errorData = await response.json();
+                        showToast(errorData.error || 'An unknown error occurred.');
+                    }
+                } catch (error) {
+                    // Handle network errors
+                    console.error('Registration request failed:', error);
+                    showToast('Could not connect to the server.');
+                } finally {
+                    // Re-enable the button
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
