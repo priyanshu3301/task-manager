@@ -151,7 +151,7 @@
                 submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
 
                 try {
-                    const response = await fetch('/login', {
+                    const response = await fetch('/api/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
