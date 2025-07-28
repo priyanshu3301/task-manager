@@ -30,7 +30,20 @@ A modern, serverless task management application built with Vanilla JavaScript a
 
 The project uses a "Functions-first" routing model on Cloudflare Pages, separating static content from the serverless API.
 
-<pre> ```text / ├── functions/ │ ├── login.js # Handles user login and session cookie creation │ ├── register.js # Handles new user registration and database creation │ └── tasks.js # Handles all CRUD operations for tasks │ ├── index.html # Main application page (task list) ├── login.html # User login page ├── register.html # User registration page ├── script.js # Frontend JavaScript for the main application ├── style.css # All application styles └── _routes.json # Cloudflare Pages routing configuration ``` </pre>
+<pre> ```
+/
+├── functions/
+│   ├── login.js       # Handles user login and session cookie creation
+│   ├── register.js    # Handles new user registration and database creation
+│   └── tasks.js       # Handles all CRUD operations for tasks
+│
+├── index.html         # Main application page (task list)
+├── login.html         # User login page
+├── register.html      # User registration page
+├── script.js          # Frontend JavaScript for the main application
+├── style.css          # All application styles
+└── _routes.json       # Cloudflare Pages routing configuration
+``` </pre>
 
 - **`/functions`**: Contains all backend API logic. Each file corresponds to an API endpoint.
 - **`_routes.json`**: This critical file tells Cloudflare which paths are handled by functions and which are static assets, preventing routing conflicts.
