@@ -9,14 +9,21 @@
     <script>
         // Immediately run protection script to prevent flash of content
         (function() {
-            function protectPage() {
-                const cookies = `; ${document.cookie}`;
-                const hasAuthCookie = cookies.includes('; auth=');
-                if (!hasAuthCookie) {
-                    window.location.href = '/login.html';
-                }
+            /**
+             * A more reliable function to check for the existence of a cookie.
+             * It splits the cookie string and checks each part.
+             */
+            function checkAuthCookie() {
+                // Get all cookies and split them into an array
+                const allCookies = document.cookie.split(';');
+                // Check if any cookie in the array starts with "auth=" after trimming whitespace
+                return allCookies.some(cookie => cookie.trim().startsWith('auth='));
             }
-            protectPage();
+
+            if (!checkAuthCookie()) {
+                console.log('Authentication cookie not found. Redirecting to login page.');
+                window.location.href = './login';
+            }
         })();
     </script>
 </head>
