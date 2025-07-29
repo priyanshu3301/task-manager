@@ -15,7 +15,7 @@ A modern, serverless task management application built with **Vanilla JavaScript
 ## 📸 Screenshots
 
 <a href="https://ibb.co/PZhRzHx3"><img src="https://i.ibb.co/Z6831Ddt/Screenshot-2025-07-29-170253.png" alt="Screenshot-2025-07-29-170253" border="0" /></a>
-
+<a href="https://ibb.co/HDmc94tQ"><img src="https://i.ibb.co/C5xjS8bF/Screenshot-2025-07-29-170325.png" alt="Screenshot-2025-07-29-170325" border="0" /></a>
 ---
 
 ## ✨ Features
