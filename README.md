@@ -3,7 +3,7 @@
 A modern, serverless task management application built with Vanilla JavaScript and powered by Cloudflare Pages, Cloudflare Functions, and IBM Cloudant. This project provides a full-featured, multi-user to-do list experience with a clean, responsive interface.
 
 # Semple websire 
-https://task-manager-ag0.pages.dev/login
+https://task-manager-ag0.pages.dev/
 # Screenshorts
 ![Cloud Task Manager Screenshot](https://i.imgur.com/your-screenshot-url.png) <!-- Replace with an actual screenshot URL -->
 
