@@ -281,3 +281,35 @@ body.dark-mode {
     /* Add this line to fix the overflow issue */
     word-break: break-word; 
 }
+/* Dark mode toggle button (optional styling) */
+.dark-toggle {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    margin-left: 1rem;
+    border-radius: var(--border-radius);
+    background-color: var(--clr-primary);
+    color: white;
+    transition: background 0.3s ease;
+}
+.dark-toggle:hover {
+    background-color: #2563eb;
+}
+
+.task-item__description {
+    font-size: 0.875rem; /* 14px */
+    color: var(--clr-text-secondary);
+    line-height: 1.5;
+    /* Add this line to fix the overflow issue */
+    word-break: break-word; 
+}
+
+#dark-toggle i {
+    font-size: 18px;
+    display: none;
+}
+.dark-mode #dark-toggle .fa-sun {
+    display: inline-block;
+}
+:not(.dark-mode) #dark-toggle .fa-moon {
+    display: inline-block;
+}
