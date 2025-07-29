@@ -85,7 +85,7 @@ export async function onRequestPost({ request, env }) {
         const encodedAuth = btoa(sessionString);
 
         // Step 4: Return a success response and set the session cookie.
-        const cookie = `auth=${encodedAuth}; HttpOnly; Path=/; SameSite=Strict; Secure`;
+        const cookie = `auth=${encodedAuth}; Path=/; SameSite=Strict; Secure`;
 
         return new Response(JSON.stringify({
             ok: true,
