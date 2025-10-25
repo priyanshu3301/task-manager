@@ -78,8 +78,63 @@
          body.dark-mode .dropdown-menu__logout-btn:hover {
          background-color: #4a5568;
          }
-         .dropdown-menu__logout-btn .fa-right-from-bracket {
-         margin-right: 10px;
+
+         /* --- 1. NEW: Dark Mode SVG Fix --- */
+         /* This targets the avatar image only in dark mode and inverts its color */
+         body.dark-mode .main-header__user-profile img {
+            filter: invert(1); /* Flips the black SVG to white */
+         }
+         
+         /* --- 2. NEW: Animation & Fluency --- */
+         
+         /* Keyframe animation for tasks popping in */
+         @keyframes popIn {
+            from {
+               opacity: 0;
+               transform: scale(0.95) translateY(10px);
+            }
+            to {
+               opacity: 1;
+               transform: scale(1) translateY(0);
+            }
+         }
+
+         /* Apply the pop-in animation to each task item as it's rendered */
+         .task-item {
+            animation: popIn 0.35s ease-out;
+         }
+
+         /* --- NEW: Keyframe for fading out --- */
+         @keyframes fadeOut {
+            from {
+               opacity: 1;
+               transform: scale(1);
+            }
+            to {
+               opacity: 0;
+               transform: scale(0.95);
+            }
+         }
+
+         /* --- NEW: Class to apply the fade-out animation --- */
+         .task-item--fading-out {
+            animation: fadeOut 0.3s ease-out forwards;
+         }
+
+         /* Add transitions to the title for the line-through effect */
+         .task-item__title {
+            transition: color 0.3s ease, text-decoration-color 0.3s ease;
+         }
+
+         /* Make the background change smoother when checking a task */
+         .task-item--completed {
+            /* Fades to the background color to de-emphasize */
+            background-color: var(--clr-bg); 
+         }
+
+         /* Make the checked-state line-through more prominent */
+         .task-item--completed .task-item__title {
+            text-decoration-color: var(--clr-danger);
          }
       </style>
    </head>
@@ -189,48 +244,57 @@
              if (parts.length === 2) return parts.pop().split(';').shift();
          }
          
-         // --- Authentication ---
-         const authName = getCookie('auth');
-         if (false) {
-             window.location.href = "/login";
-         } else {
-             // --- NEW: Run UI setup after DOM is loaded ---
-             document.addEventListener('DOMContentLoaded', () => {
-                 const displayName = authName.charAt(0).toUpperCase() + authName.slice(1);
+         // --- NEW: Authentication & UI Setup ---
+         (async function setupUserUI() {
+            try {
+                // 1. Fetch user data from our new secure endpoint
+                const response = await fetch('/api/me');
+                
+                if (!response.ok) {
+                    // If token is invalid or missing, /api/me returns 401
+                    throw new Error('Not authenticated');
+                }
+                
+                const user = await response.json();
+                const displayName = user.username.charAt(0).toUpperCase() + user.username.slice(1);
+
+                // 2. Set Welcome Message
+                document.getElementById('welcome-message').textContent = `Welcome, ${displayName}`;
+
+                // 3. Set up Profile Dropdown
+                const profileMenu = document.getElementById('user-profile-menu');
+                const dropdown = document.getElementById('user-dropdown');
+                const dropdownUsername = document.getElementById('dropdown-username');
+                const logoutBtn = document.getElementById('logout-btn');
+
+                dropdownUsername.textContent = displayName;
+
+                profileMenu.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    dropdown.classList.toggle('show'); // This makes the dropdown appear
+                });
+
+                logoutBtn.addEventListener('click', () => {
+                    setCookie('auth', '', -1); // Expire the cookie
+                    window.location.href = "/login.html"; // Redirect to login
+                });
+
+                // Close dropdown if clicked outside
+                window.addEventListener('click', () => {
+                    if (dropdown.classList.contains('show')) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+
+            } catch (error) {
+                // If anything fails (e.g., no cookie, bad token), redirect to login
+                console.error('Auth fetch failed, redirecting to login.', error);
+                window.location.href = "/login.html";
+            }
+         })();
+
          
-                 // 1. Set Welcome Message
-                 document.getElementById('welcome-message').textContent = `Welcome, ${displayName}`;
-         
-                 // 2. Set up Profile Dropdown
-                 const profileMenu = document.getElementById('user-profile-menu');
-                 const dropdown = document.getElementById('user-dropdown');
-                 const dropdownUsername = document.getElementById('dropdown-username');
-                 const logoutBtn = document.getElementById('logout-btn');
-         
-                 dropdownUsername.textContent = displayName;
-         
-                 profileMenu.addEventListener('click', (event) => {
-                     event.stopPropagation();
-                     dropdown.classList.toggle('show');
-                 });
-         
-                 logoutBtn.addEventListener('click', () => {
-                     setCookie('auth', '', -1); // Expire the cookie
-                     window.location.href = "/login";
-                 });
-             });
-         
-             // Close dropdown if clicked outside
-             window.addEventListener('click', () => {
-                 const dropdown = document.getElementById('user-dropdown');
-                 if (dropdown.classList.contains('show')) {
-                     dropdown.classList.remove('show');
-                 }
-             });
-         }
-         
-         
-         // --- Dark Mode Logic ---
+         // --- Dark Mode Logic (Unchanged) ---
          const toggleBtn = document.getElementById('dark-toggle');
          const sunIcon = document.querySelector('#dark-toggle .fa-sun');
          const moonIcon = document.querySelector('#dark-toggle .fa-moon');

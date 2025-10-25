@@ -1,3 +1,5 @@
+import { SignJWT } from 'jose';
+
 /**
  * A helper function to generate the database authentication headers.
  * It uses environment variables, which must be set in your Cloudflare Pages project settings.
@@ -28,12 +30,39 @@ const jsonError = (message, status = 500) => {
 };
 
 /**
+ * Encodes the JWT_SECRET environment variable into a Uint8Array
+ * for use with the 'jose' library.
+ * @param {object} env - The environment variables object.
+ * @returns {Uint8Array}
+ */
+const getJwtSecret = (env) => {
+    if (!env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not configured in environment variables.");
+    }
+    return new TextEncoder().encode(env.JWT_SECRET);
+};
+
+/**
+ * Hashes a password with a given salt using SHA-256.
+ * @param {string} password - The plain-text password.
+ * @param {string} salt - A unique string (like a UUID).
+ * @returns {Promise<string>} The resulting hash as a hex string.
+ */
+async function hashPassword(password, salt) {
+    const data = new TextEncoder().encode(password + salt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    // Convert ArrayBuffer to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Handles POST requests for user login.
  */
 export async function onRequestPost({ request, env }) {
     // Ensure required environment variables are configured
-    if (!env.AUTH_URL) {
-        console.error("AUTH_URL is not configured.");
+    if (!env.AUTH_URL || !env.JWT_SECRET) {
+        console.error("AUTH_URL or JWT_SECRET is not configured.");
         return jsonError("Service configuration error.", 500);
     }
 
@@ -51,13 +80,13 @@ export async function onRequestPost({ request, env }) {
     }
 
     try {
-        // Step 1: Find the user in the authentication database.
+        // Step 1: Find the user in the authentication database by username.
         const findUrl = `${env.AUTH_URL}_find`;
         const query = {
             selector: {
-                username: username,
-                password: password
-            }
+                username: username
+            },
+            limit: 1 // We only expect one user
         };
 
         const findResponse = await fetch(findUrl, {
@@ -80,12 +109,28 @@ export async function onRequestPost({ request, env }) {
 
         const userDoc = result.docs[0];
 
-        // Step 3: Create the Base64-encoded session string.
-        const sessionString = `${userDoc._id}:${userDoc.username}:${userDoc.password}`;
-        const encodedAuth = btoa(sessionString);
+        // Step 3: Verify the password hash
+        const storedHash = userDoc.password;
+        const salt = userDoc.salt;
+        const providedHash = await hashPassword(password, salt);
 
-        // Step 4: Return a success response and set the session cookie.
-        const cookie = `auth=${encodedAuth}; Path=/; SameSite=Strict; Secure`;
+        if (providedHash !== storedHash) {
+            return jsonError("Invalid username or password.", 401); // Unauthorized
+        }
+
+        // Step 4: Create the JWT
+        const secret = getJwtSecret(env);
+        const token = await new SignJWT({
+            userId: userDoc._id,
+            username: userDoc.username
+        })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('7d') // Set token to expire in 7 days
+        .sign(secret);
+
+        // Step 5: Return a success response and set the secure, HttpOnly cookie.
+        const cookie = `auth=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`;
 
         return new Response(JSON.stringify({
             ok: true,

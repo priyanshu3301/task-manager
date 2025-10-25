@@ -1,3 +1,5 @@
+import { jwtVerify } from 'jose';
+
 /**
  * A helper function to generate the database authentication headers.
  * It uses environment variables, which must be set in your Cloudflare Pages project settings.
@@ -45,9 +47,22 @@ const parseCookies = (cookieHeader) => {
     return cookies;
 };
 
+/**
+ * Encodes the JWT_SECRET environment variable into a Uint8Array
+ * for use with the 'jose' library.
+ * @param {object} env - The environment variables object.
+ * @returns {Uint8Array}
+ */
+const getJwtSecret = (env) => {
+    if (!env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not configured in environment variables.");
+    }
+    return new TextEncoder().encode(env.JWT_SECRET);
+};
+
 
 /**
- * Middleware to handle authentication via cookies.
+ * Middleware to handle authentication via JWT cookie.
  * @param {function} handler - The function to call if authentication is successful.
  * @returns {function} An async function that takes the request context.
  */
@@ -55,64 +70,45 @@ const createAuthMiddleware = (handler) => {
   return async (context) => {
     const { request, env } = context;
 
-    if (!env.AUTH_URL || !env.DATABASE_URL) {
-        console.error("AUTH_URL or DATABASE_URL is not configured.");
+    if (!env.DATABASE_URL || !env.JWT_SECRET) {
+        console.error("DATABASE_URL or JWT_SECRET is not configured.");
         return jsonError("Service not configured.", 500);
     }
 
-    // 1. Get credentials from the 'auth' cookie
+    // 1. Get token from the 'auth' cookie
     const cookies = parseCookies(request.headers.get('Cookie'));
-    const authCookie = cookies.auth;
+    const authCookie = cookies.auth; // This is now a JWT
 
     if (!authCookie) {
-        return jsonError('Authentication cookie not found.', 401);
+        return jsonError('Authentication token not found.', 401);
     }
 
-    let userId, username, password;
+    // 2. Verify the JWT
     try {
-        // 2. Decode the Base64 cookie
-        const decoded = atob(authCookie);
-        [userId, username, password] = decoded.split(':', 3);
-        if (!userId || !username || !password) throw new Error('Invalid format');
-    } catch (e) {
-        return jsonError('Invalid authentication cookie format.', 401);
-    }
+        const secret = getJwtSecret(env);
+        const { payload } = await jwtVerify(authCookie, secret);
 
-    // 3. Authenticate by fetching the user document and comparing credentials
-    try {
-        const userDocUrl = `${env.AUTH_URL}${encodeURIComponent(userId)}`;
-        const dbHeaders = getDbHeaders(env);
-        delete dbHeaders['Content-Type']; // Not needed for GET
-
-        const authResponse = await fetch(userDocUrl, { headers: dbHeaders });
-
-        if (authResponse.status === 404) {
-             return jsonError('User not found.', 401);
-        }
-        if (!authResponse.ok) {
-            return jsonError('Authentication service returned an error.', authResponse.status);
+        if (!payload.username || !payload.userId) {
+             return jsonError('Invalid token payload.', 401);
         }
 
-        const storedUser = await authResponse.json();
-        
-        // 4. Verify that the credentials from the cookie match the stored credentials
-        if (storedUser.username === username && storedUser.password === password) {
-            // SUCCESS: Add the validated username to the context for the next function
-            context.username = username;
-            return handler(context);
-        } else {
-            return jsonError('Invalid credentials.', 401);
-        }
+        // SUCCESS: Add the validated username from the token to the context
+        context.username = payload.username;
+        return handler(context);
 
     } catch (err) {
-        console.error("Authentication Error:", err.message);
-        return jsonError('Could not reach authentication service.', 503);
+        // This will catch expired tokens, invalid signatures, etc.
+        console.error("Token verification failed:", err.message);
+        // We also want to clear the invalid cookie
+        const headers = { 'Set-Cookie': 'auth=; Path=/; Max-Age=-1' };
+        return jsonError('Invalid or expired token.', 401, { headers });
     }
   };
 };
 
 // --- Core Logic (Un-exported) ---
-// These functions now receive the username from the context to build user-specific URLs.
+// NO CHANGES ARE NEEDED in _handleGet, _handlePost, _handlePut, or _handleDelete
+// They will all work correctly as they just use `context.username`.
 
 async function _handleGet({ env, username }) {
     try {
@@ -185,4 +181,3 @@ export const onRequestGet = createAuthMiddleware(_handleGet);
 export const onRequestPost = createAuthMiddleware(_handlePost);
 export const onRequestPut = createAuthMiddleware(_handlePut);
 export const onRequestDelete = createAuthMiddleware(_handleDelete);
-// --- End of Core Logic ---

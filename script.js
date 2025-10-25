@@ -23,10 +23,23 @@ let editingTaskId = null; // NEW: To track the ID of the task being edited
 // --- 3. API Service ---
 const API_BASE = '/api/tasks';
 
+// NEW: Centralized response checker
+async function checkAuth(res) {
+    if (!res.ok) {
+        if (res.status === 401) {
+            // Unauthorized, token is bad or expired
+            alert('Your session has expired. Please log in again.');
+            window.location.href = '/login.html';
+        }
+        throw new Error(`API Error: ${res.statusText}`);
+    }
+    return res;
+}
+
 const apiService = {
     fetchTasks: async () => {
         const res = await fetch(API_BASE);
-        if (!res.ok) throw new Error('Failed to fetch tasks');
+        await checkAuth(res); // Check response
         return await res.json();
     },
     createTask: async (taskData) => {
@@ -35,7 +48,7 @@ const apiService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(taskData)
         });
-        if (!res.ok) throw new Error('Failed to create task');
+        await checkAuth(res); // Check response
         return await res.json();
     },
     updateTask: async (taskId, updateData) => {
@@ -44,7 +57,7 @@ const apiService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updateData)
         });
-        if (!res.ok) throw new Error('Failed to update task');
+        await checkAuth(res); // Check response
         return await res.json();
     },
     deleteTask: async (taskId) => {
@@ -56,7 +69,7 @@ const apiService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ _id: task._id, _rev: task._rev })
         });
-        if (!res.ok) throw new Error('Failed to delete task');
+        await checkAuth(res); // Check response
         return await res.json();
     },
 };
@@ -214,19 +227,32 @@ async function handleTaskListClick(e) {
     if (actionButton) {
         const action = actionButton.dataset.action;
         if (action === 'delete') {
-            // ... (This logic remains the same)
+            
+            // --- MODIFIED DELETE LOGIC ---
             if (confirm('Are you sure you want to delete this task?')) {
-                try {
-                    await apiService.deleteTask(taskId);
-                    tasks = tasks.filter(t => t._id !== taskId);
-                    renderTasks();
-                } catch (error) {
-                    console.error('Failed to delete task:', error);
-                    alert('Error: Could not delete the task.');
-                }
+                
+                // 1. Add the fade-out class to the task item
+                taskItem.classList.add('task-item--fading-out');
+
+                // 2. Wait for the animation to finish (300ms)
+                setTimeout(async () => {
+                    try {
+                        // 3. Run the API delete and local array update
+                        await apiService.deleteTask(taskId);
+                        tasks = tasks.filter(t => t._id !== taskId);
+                        renderTasks(); // Re-render the list *after* the item is gone
+                    } catch (error) {
+                        console.error('Failed to delete task:', error);
+                        alert('Error: Could not delete the task.');
+                        // If it fails, remove the class so the item reappears
+                        taskItem.classList.remove('task-item--fading-out');
+                    }
+                }, 300); // This duration must match your fadeOut animation
             }
+            // --- END OF MODIFIED LOGIC ---
+
         } else if (action === 'edit') {
-            // --- NEW: EDIT LOGIC ---
+            // --- EDIT LOGIC (remains the same) ---
             const taskToEdit = tasks.find(t => t._id === taskId);
             if (!taskToEdit) return;
 

@@ -28,6 +28,21 @@ const jsonError = (message, status = 500) => {
 };
 
 /**
+ * Hashes a password with a given salt using SHA-256.
+ * @param {string} password - The plain-text password.
+ * @param {string} salt - A unique string (like a UUID).
+ * @returns {Promise<string>} The resulting hash as a hex string.
+ */
+async function hashPassword(password, salt) {
+    const data = new TextEncoder().encode(password + salt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    // Convert ArrayBuffer to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+
+/**
  * Handles POST requests to register a new user.
  */
 export async function onRequestPost({ request, env }) {
@@ -73,8 +88,18 @@ export async function onRequestPost({ request, env }) {
             return jsonError("Could not create user account.", 500);
         }
 
-        // Step 2: If the database was created, create the user's authentication document.
-        const userAuthPayload = { username, password };
+        // Step 2: If the database was created, create the user's secure authentication document.
+        
+        // --- NEW: Hash the password ---
+        const salt = crypto.randomUUID(); // Create a unique salt for this user
+        const hashedPassword = await hashPassword(password, salt);
+
+        const userAuthPayload = { 
+            username, 
+            password: hashedPassword, // Store the HASH
+            salt: salt                // Store the salt
+        };
+        // --- End of new code ---
 
         const createUserDocResponse = await fetch(env.AUTH_URL, {
             method: 'POST',
