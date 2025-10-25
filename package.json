@@ -1,0 +1,23 @@
+{
+  "name": "task-manager",
+  "version": "1.0.0",
+  "description": "A modern, serverless task management application built with Vanilla JavaScript and powered by Cloudflare Pages, Cloudflare Functions, and IBM Cloudant. This project provides a full-featured, multi-user to-do list experience with a clean, responsive interface.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/priyanshu3301/task-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/priyanshu3301/task-manager/issues"
+  },
+  "homepage": "https://github.com/priyanshu3301/task-manager#readme",
+  "dependencies": {
+    "jose": "^6.1.0"
+  }
+}
