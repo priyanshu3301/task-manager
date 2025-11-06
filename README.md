@@ -1,39 +1,57 @@
-# Cloud Task Manager
+---
 
-A modern, serverless task management application built with Vanilla JavaScript and powered by Cloudflare Pages, Cloudflare Functions, and IBM Cloudant. This project provides a full-featured, multi-user to-do list experience with a clean, responsive interface.
+# ☁️ Cloud Task Manager
 
-# Semple websire 
-https://task-manager-ag0.pages.dev/login
-# Screenshorts
-![Cloud Task Manager Screenshot](https://i.imgur.com/your-screenshot-url.png) <!-- Replace with an actual screenshot URL -->
-
-## Features
-
-- **Full CRUD Functionality**: Create, Read, Update, and Delete tasks.
-- **User Authentication**: Secure user registration and login system.
-- **Multi-User Data Isolation**: Each user's tasks are stored in their own dedicated, secure database.
-- **Dynamic Filtering & Searching**: Instantly filter tasks by status (All, Pending, Completed) and search by title or description.
-- **Responsive Design**: A seamless experience across desktop, tablet, and mobile devices.
-- **Dark/Light Mode**: A stylish theme toggle with user preferences saved to cookies.
-- **Serverless Backend**: All backend logic is handled by high-performance Cloudflare Functions.
-- **NoSQL Database**: Leverages the scalability and flexibility of IBM Cloudant, a distributed JSON document database.
+A modern, serverless task management application built with **Vanilla JavaScript**, hosted on **Cloudflare Pages**, powered by **Cloudflare Functions** and **IBM Cloudant**. This project delivers a full-featured, multi-user to-do list experience with a sleek, responsive interface.
 
 ---
 
-## Tech Stack
+## 🔗 Live Demo
 
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
-- **Hosting**: [Cloudflare Pages](https://pages.cloudflare.com/)
-- **Backend**: [Cloudflare Functions](https://developers.cloudflare.com/pages/functions/) (Serverless API)
-- **Database**: [IBM Cloudant](https://www.ibm.com/cloud/cloudant) (NoSQL DBaaS)
+🌐 [Try it here](https://task-manager-ag0.pages.dev/)
 
 ---
 
-## Project Structure
+## 📸 Screenshots
 
-The project uses a "Functions-first" routing model on Cloudflare Pages, separating static content from the serverless API.
+<a href="https://ibb.co/PZhRzHx3"><img src="https://i.ibb.co/Z6831Ddt/Screenshot-2025-07-29-170253.png" alt="Screenshot-2025-07-29-170253" border="0" /></a>
+<a href="https://ibb.co/HDmc94tQ"><img src="https://i.ibb.co/C5xjS8bF/Screenshot-2025-07-29-170325.png" alt="Screenshot-2025-07-29-170325" border="0" /></a>
+---
 
-<pre> ```
+## ✨ Features
+
+* ✅ **Full CRUD Operations** — Create, read, update, and delete your tasks effortlessly
+* 🔐 **Secure Authentication** — User registration and login with isolated task storage
+* 👥 **Multi-user Support** — Each user’s tasks are stored in their own database
+* 🔎 **Dynamic Filters & Search** — Filter by status and search by title/description
+* 📱 **Responsive Design** — Works beautifully on mobile, tablet, and desktop
+* 🌙 **Dark/Light Mode** — Smart theme toggle saved in cookies
+* ⚡ **Serverless Backend** — All logic runs on Cloudflare Functions
+* 🧱 **NoSQL Powered** — Data stored in IBM Cloudant, a JSON-based database
+
+---
+
+## 🧰 Tech Stack
+
+* 🎨 **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+* 🚀 **Hosting**: [Cloudflare Pages](https://pages.cloudflare.com/)
+* 🧠 **Backend**: [Cloudflare Functions](https://developers.cloudflare.com/pages/functions/)
+* 🗃️ **Database**: [IBM Cloudant](https://www.ibm.com/cloud/cloudant)
+
+## 🛠 Tech Stack
+
+| Layer       | Tools Used                        |
+|-------------|-----------------------------------|
+| **Frontend**| HTML, CSS, JavaScript             |
+| **Backend** | JavaScript                        |
+| **Database**| IBM Cloudant NoSQL DB             |
+| **Hosting** | Cloudflare Pages                  |
+
+---
+
+## 🗂️ Project Structure
+
+```
 /
 ├── functions/
 │   ├── login.js       # Handles user login and session cookie creation
@@ -44,69 +62,72 @@ The project uses a "Functions-first" routing model on Cloudflare Pages, separati
 ├── login.html         # User login page
 ├── register.html      # User registration page
 ├── script.js          # Frontend JavaScript for the main application
-├── style.css          # All application styles
-└── _routes.json       # Cloudflare Pages routing configuration
-``` </pre>
+└── style.css          # All application styles
+```
 
-- **`/functions`**: Contains all backend API logic. Each file corresponds to an API endpoint.
-- **`_routes.json`**: This critical file tells Cloudflare which paths are handled by functions and which are static assets, preventing routing conflicts.
+🧩 The `functions/` directory contains all backend logic exposed as API endpoints.
+---
+
+## 🚀 Deployment Guide
+
+### 🛠️ Prerequisites
+
+* A free [Cloudflare](https://dash.cloudflare.com/sign-up) account
+* A free [IBM Cloud](https://cloud.ibm.com/registration) account
+* Git installed locally and a [GitHub](https://github.com/) account
 
 ---
 
-## Deployment Guide
+### ☁️ IBM Cloudant Setup
 
-Follow these steps to set up and deploy your own instance of the Cloud Task Manager.
+1. Log into your IBM Cloud account
+2. Create a **Cloudant** service instance (choose Lite plan)
+3. Navigate to **Service Credentials**, create a new credential
+4. Save your `url`, `apikey`, and `password`
+5. Launch the Cloudant dashboard
+6. Create a **`users`** database (no partitioning)
 
-### Step 1: Prerequisites
+---
 
-1.  **Cloudflare Account**: You will need a free [Cloudflare](https://dash.cloudflare.com/sign-up) account.
-2.  **IBM Cloud Account**: You will need a free [IBM Cloud](https://cloud.ibm.com/registration) account to provision a Cloudant database instance.
-3.  **Git & GitHub**: You should have Git installed and a [GitHub](https://github.com/) account.
+### 🔄 Clone & Deploy
 
-### Step 2: Set Up IBM Cloudant Database
+```bash
+git clone https://github.com/priyanshu3301/task-manager.git
+cd task-manager
+```
 
-1.  Log in to your IBM Cloud account.
-2.  Create a **Cloudant** service instance (the "Lite" plan is free and sufficient for this project).
-3.  Once the instance is provisioned, go to its dashboard and click **"Service credentials"**.
-4.  Create a new credential. Note down the **`url`**, **`apikey`** (this is your `DB_USERNAME`), and **`password`** (this is your `DB_PASSWORD`).
-5.  Go back to the Cloudant dashboard and click **"Launch Dashboard"**.
-6.  In the Cloudant dashboard, create a new database named **`users`**. This database will store the authentication documents for all users. **Do not partition this database.**
+---
 
-### Step 3: Fork and Clone the Repository
+### 🌐 Deploy to Cloudflare Pages
 
-1.  Fork this GitHub repository to your own account.
-2.  Clone your forked repository to your local machine:
-    ```bash
-    git clone [https://github.com/your-username/task-manager.git](https://github.com/your-username/task-manager.git)
-    cd task-manager
-    ```
+1. Log in to Cloudflare → Pages → Create Application
+2. Connect to your GitHub repo
+3. Set:
 
-### Step 4: Deploy to Cloudflare Pages
+   * **Framework preset**: `None`
+   * **Build command**: *(leave blank)*
+   * **Output directory**: `/` or blank
+4. Click **Save and Deploy**
 
-1.  Log in to your Cloudflare dashboard.
-2.  Go to **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
-3.  Select your forked repository.
-4.  In the **"Build settings"** section, configure the project as follows:
-    - **Framework preset**: `None`
-    - **Build command**: (leave this blank)
-    - **Build output directory**: `/` (or leave blank)
-5.  Click **"Save and Deploy"**.
+---
 
-### Step 5: Configure Environment Variables
+### 🔐 Configure Environment Variables
 
-This is the most important step for connecting your application to the database.
+In your Cloudflare Pages dashboard → **Settings > Environment Variables**, add:
 
-1.  After the first deployment finishes, go to your new Pages project's dashboard.
-2.  Navigate to **Settings** > **Environment variables**.
-3.  Add the following **four** variables, using the credentials you saved from IBM Cloudant:
+| Name           | Value                                | Notes                                                      |
+| -------------- | ------------------------------------ | ---------------------------------------------------------- |
+| `DATABASE_URL` | `https://<your-cloudant-url>/`       | Base URL from your service credentials (must end with `/`) |
+| `AUTH_URL`     | `https://<your-cloudant-url>/users/` | Points to your `users` database (must end with `/`)        |
+| `DB_USERNAME`  | `apikey-v2-xxxxxxxxxxxxxxxx`         | The `apikey` from Cloudant service credentials             |
+| `DB_PASSWORD`  | `xxxxxxxxxxxxxxxx`                   | The `password` from the credentials (not the IAM API key!) |
 
-| Variable Name   | Value                                                              | Description                                                                 |
-| --------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `DATABASE_URL`  | `https://<your-instance-url>/`                                     | The base URL from your Cloudant credentials. **Must end with a slash `/`**. |
-| `AUTH_URL`      | `https://<your-instance-url>/users/`                               | The URL for your `users` database. **Must end with a slash `/`**.           |
-| `DB_USERNAME`   | `apikey-v2-xxxxxxxx`                                               | The `apikey` from your Cloudant credentials.                                |
-| `DB_PASSWORD`   | `xxxxxxxxxxxxxxxx`                                                 | The `password` from your Cloudant credentials.                              |
+🔁 Once done, go to **Deployments** and click **Redeploy** to apply.
 
-4.  After adding the variables, go back to the **"Deployments"** tab and redeploy the latest version to apply the new settings.
+---
 
-Your application is now live! You can visit the URL provided by Cloudflare Pages, register a new account, and start managing your tasks.
+## 🎉 Done!
+
+Visit your deployed URL, register a user, and start managing your tasks in the cloud ☁️📝
+
+If you need help generating a proper screenshot or linking one, just ask.
