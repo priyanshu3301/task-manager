@@ -11,4 +11,4 @@ async function _handleGet({ env, username, userId }) {
     });
 }
 
-export const onRequestGet = createAuthMiddleware(_handleGet);
+export const onRequestGet = _handleGet;
