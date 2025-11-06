@@ -274,10 +274,16 @@
                     dropdown.classList.toggle('show'); // This makes the dropdown appear
                 });
 
-                logoutBtn.addEventListener('click', () => {
-                    setCookie('auth', '', -1); // Expire the cookie
-                    window.location.href = "/login.html"; // Redirect to login
+                logoutBtn.addEventListener('click', async () => {
+                  try {
+                        await fetch('/api/logout', { method: 'GET' }); // or POST
+                     } catch (err) {
+                        console.warn('Logout request failed:', err);
+                     } finally {
+                         window.location.href = "/login.html";
+                        }
                 });
+
 
                 // Close dropdown if clicked outside
                 window.addEventListener('click', () => {
